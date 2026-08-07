@@ -103,6 +103,22 @@ export default function App() {
   const [theme, setTheme] = useState("dark");
   const [tab, setTab] = useState("mantenimiento"); // mantenimiento | parada_planta
   const [mensajeBackup, setMensajeBackup] = useState("");
+  const [soloLectura, setSoloLectura] = useState(false);
+
+  // Modo de solo lectura: se activa agregando ?soloLectura=1 al final del
+  // link. Solo muestra Parada de Planta e Indicadores, y bloquea cualquier
+  // click/edición dentro de esas pestañas.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("soloLectura") === "1") {
+        setSoloLectura(true);
+        setTab("parada_planta");
+      }
+    } catch (e) {
+      /* sin acceso a la URL (no debería pasar en el navegador) */
+    }
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -235,12 +251,14 @@ export default function App() {
 
       {/* Pestañas */}
       <div style={styles.tabBar}>
-        <button
-          style={{ ...styles.tabBtn, ...(tab === "mantenimiento" ? styles.tabBtnActive : {}) }}
-          onClick={() => setTab("mantenimiento")}
-        >
-          Mantenimiento
-        </button>
+        {!soloLectura && (
+          <button
+            style={{ ...styles.tabBtn, ...(tab === "mantenimiento" ? styles.tabBtnActive : {}) }}
+            onClick={() => setTab("mantenimiento")}
+          >
+            Mantenimiento
+          </button>
+        )}
         <button
           style={{ ...styles.tabBtn, ...(tab === "parada_planta" ? styles.tabBtnActive : {}) }}
           onClick={() => setTab("parada_planta")}
@@ -253,18 +271,25 @@ export default function App() {
         >
           Indicadores
         </button>
-        <button
-          style={{ ...styles.tabBtn, ...(tab === "centrifugas" ? styles.tabBtnActive : {}) }}
-          onClick={() => setTab("centrifugas")}
-        >
-          Centrífugas y tanques
-        </button>
+        {!soloLectura && (
+          <button
+            style={{ ...styles.tabBtn, ...(tab === "centrifugas" ? styles.tabBtnActive : {}) }}
+            onClick={() => setTab("centrifugas")}
+          >
+            Centrífugas y tanques
+          </button>
+        )}
+        {soloLectura && (
+          <span style={styles.soloLecturaBadge}>Solo lectura</span>
+        )}
       </div>
 
-      {tab === "mantenimiento" ? <MantenimientoTab />
-        : tab === "parada_planta" ? <ParadaPlantaTab />
-        : tab === "indicadores" ? <IndicadoresTab />
-        : <CentrifugasTab />}
+      <div style={soloLectura ? { pointerEvents: "none" } : undefined}>
+        {tab === "mantenimiento" ? <MantenimientoTab />
+          : tab === "parada_planta" ? <ParadaPlantaTab />
+          : tab === "indicadores" ? <IndicadoresTab />
+          : <CentrifugasTab />}
+      </div>
     </div>
   );
 }
@@ -5862,6 +5887,11 @@ const styles = {
   },
   ferringLogo: {
     height: 26, width: "auto", display: "block",
+  },
+  soloLecturaBadge: {
+    marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "var(--text-dim)",
+    background: "var(--panel-2)", border: "1px solid var(--border)", borderRadius: 999,
+    padding: "4px 10px", alignSelf: "center",
   },
   tabBar: {
     display: "flex", gap: 4, margin: "0 -24px 0 -24px", padding: "0 24px",
