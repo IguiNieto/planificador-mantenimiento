@@ -117,7 +117,7 @@ export default function App() {
   // lectura, "Planificador de Mantenimiento" una vez desbloqueada la edición.
   useEffect(() => {
     try {
-      document.title = soloLectura ? "Parada de Planta" : "Planificador de Mantenimiento";
+      document.title = soloLectura ? "Parada de Planta 2026 / 2027" : "Planificador de Mantenimiento";
     } catch (e) {
       /* sin acceso al documento (no debería pasar en el navegador) */
     }
